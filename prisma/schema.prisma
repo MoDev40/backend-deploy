@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// prisma/schema.prisma
+datasource db {
+  provider  = "postgresql"
+  url  	    = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+
+model Type {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  item Item[]
+  // Add other type-related fields if needed
+}
+
+model User {
+  id       Int      @id @default(autoincrement())
+  username String   @unique
+  email    String   @unique
+  password String
+  createdAt DateTime @default(now())
+  isAdmin Boolean @default(false)
+  items      Item[]
+  reports Report[]
+  // Add other user-related fields if needed
+}
+model Item {
+  id           Int      @id @default(autoincrement())
+  name         String
+  description  String?
+  typeID         Int   // You might want to create a separate Type model if there are multiple types.
+  price        Float
+  quantity     Int
+  availability Boolean
+  createdAt    DateTime @default(now())
+  ownerId    Int
+  owner      User   @relation(fields: [ownerId], references: [id])
+  type      Type   @relation(fields: [typeID], references: [id])
+  transactions Transaction[]
+  notification Notification[]
+  // Add other item-related fields as necessary
+}
+
+model Notification {
+  id      Int      @id @default(autoincrement())
+  itemId  Int
+  message String
+  createdAt    DateTime @default(now())
+  item        Item    @relation(fields: [itemId], references: [id])
+  // Add other notification-related fields if required
+}
+model Report {
+  id          Int      @id @default(autoincrement())
+  month       String   // For monthly reports
+  totalItems  Int
+  totalPrice  Float
+  createdAt    DateTime @default(now())
+  ownerId    Int
+  owner      User   @relation(fields: [ownerId], references: [id])
+  // Add other report-related fields as needed
+}
+
+
+model Transaction {
+  id           Int      @id @default(autoincrement())
+  itemId       Int
+  quantity     Int
+  transactionType String   // "in" or "out" for example
+  timestamp    DateTime @default(now())
+  item        Item    @relation(fields: [itemId], references: [id])
+  // Add other transaction-related fields if necessary
+}
+
+
